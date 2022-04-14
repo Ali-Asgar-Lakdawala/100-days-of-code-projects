@@ -1,21 +1,47 @@
-from turtle import Turtle,Screen,position
+from turtle import Screen
 from snake import Snake
+from food import Food
+from scoreboard import Scoreboard
+import time
 
 screen=Screen()
 screen.setup(600,600)
 screen.bgcolor('black')
+screen.title("My Snake Game")
 
-snake_segments=[]
-starting_pos=[(0,0),(-20,0),(-40,0)]
 screen.tracer(0)
-for pos in starting_pos:
-    segment=Turtle(shape='square')
-    segment.color('white')
-    segment.penup()
-    segment.goto(pos)
-    snake_segments.append(segment)
-screen.update()
 
+food=Food()
+snake=Snake(screen)
+scorecard=Scoreboard()
 
-snake=Snake(snake_segments,screen)
-snake.move_snake()
+screen.listen()
+screen.onkey(snake.up, "Up")
+screen.onkey(snake.down, "Down")
+screen.onkey(snake.left, "Left")
+screen.onkey(snake.right, "Right")
+
+alive=True
+while alive:
+    screen.update()
+    time.sleep(0.1)
+    snake.move_snake()
+
+    #snake eating the food
+    if snake.head.distance(food)<15:
+        food.refresh()
+        snake.snake_ate_food()
+        scorecard.update_score()
+
+    #snake coliding with wall
+    if snake.head.position()[0]>280 or snake.head.position()[0]<-280 or snake.head.position()[1]>280 or snake.head.position()[1]<-280 :
+        alive=False
+        scorecard.game_over()
+
+    #snake coliding with itself
+    for snake_segment in snake.snake_segments[1:]:
+        if snake.head.distance(snake_segment)<15:
+            alive=False
+            scorecard.game_over()
+
+screen.exitonclick()
