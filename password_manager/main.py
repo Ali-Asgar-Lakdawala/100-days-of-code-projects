@@ -1,6 +1,28 @@
 from tkinter import *
 from tkinter import messagebox
 import random
+import json
+
+
+# ---------------------------- check for data exist ------------------------------- #
+def exists():
+    website = website_entry.get()
+
+    if len(website) == 0:
+        messagebox.showinfo(title="Oops", message="Please enter any website name to find its data.")
+    else:
+        with open('data.json',"r") as txt:
+            data=json.load(txt)
+
+        for i,v in data.items():
+            if website==i:
+                email=v['email']
+                password=v['password']
+                messagebox.showinfo(title=website, message=f"Email: {email} \nPassword: {password}")
+            else:
+                messagebox.showinfo(title=website, message=f"Email: {email} \nPassword: {password}")
+    
+    
 
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
 def password_generator():
@@ -17,27 +39,25 @@ def password_generator():
     password_numbers = [random.choice(numbers) for char in range(nr_numbers)]
     password_list=password_letter+password_symbol+password_numbers
 
-
     random.shuffle(password_list)
 
-    password = ""
-    for char in password_list:
-        password += char
+    password = "".join(password_list)
     password_entry.delete(0,END)
     password_entry.insert(0, password)
 
 
 
 # ---------------------------- SAVE PASSWORD ------------------------------- #
-def save_info(data,website,email,password):
-    data.write(f'{website}, {email}, {password}\n')
-    website_entry.delete(0,END)
-    password_entry.delete(0,END)
-
 def save():
     website = website_entry.get()
     email = email_entry.get()
     password = password_entry.get()
+    new_data={
+        website:{
+            'email':email,
+            'password':password
+        }
+    }
     
     if len(website) == 0 or len(password) == 0:
         messagebox.showinfo(title="Oops", message="Please make sure you haven't left any fields empty.")
@@ -46,12 +66,26 @@ def save():
                                                       f"\nPassword: {password} \nIs it ok to save?")
         if is_ok:
             try:
-                with open('data.txt',"a") as data:
-                    save_info(data,website,email,password)
-
+                with open('data.json',"r") as data_json:
+                    #reading old data
+                    data=json.load(data_json)
+                    #updating the old data
+                    data.update(new_data)
             except:
-                with open('data.txt',"w") as data:
-                    save_info(data,website,email,password)
+                with open('data.json',"w") as data_json:
+                    json.dump(new_data,data_json,indent=4)
+
+                    website_entry.delete(0,END)
+                    password_entry.delete(0,END)
+            else:
+                #wring the new data in file     
+                with open('data.json',"w") as data_json:
+                    json.dump(data,data_json,indent=4)
+
+                    website_entry.delete(0,END)
+                    password_entry.delete(0,END)
+                
+            
 
 # ---------------------------- UI SETUP ------------------------------- #
 window = Tk()
@@ -72,18 +106,20 @@ password_label = Label(text="Password:")
 password_label.grid(row=3, column=0)
 
 #Entries
-website_entry = Entry(width=41, justify='left')
-website_entry.grid(row=1, column=1, columnspan=2)
-email_entry = Entry(width=41, justify='left')
+website_entry = Entry(width=25, justify='left')
+website_entry.grid(row=1, column=1)
+email_entry = Entry(width=45, justify='left')
 email_entry.grid(row=2, column=1, columnspan=2)
 email_entry.insert(0, "aliasgarlakdawala0209@gmail.com")
 password_entry = Entry(width=25, justify='left')
 password_entry.grid(row=3, column=1)
 
 # Buttons
-generate_password_button = Button(text="Generate Password",command=password_generator)
+generate_password_button = Button(text="Generate Password", width=15,command=password_generator)
 generate_password_button.grid(row=3, column=2)
 add_button = Button(text="Add", width=34,command=save)
 add_button.grid(row=4, column=1, columnspan=2)
+search_button=Button(text="Search", width=15,command=exists)
+search_button.grid(row=1, column=2)
 
 window.mainloop()
