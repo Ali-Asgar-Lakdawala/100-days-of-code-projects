@@ -1,17 +1,19 @@
+from question_model import Question
 from data import question_data
-from question_model import question_ans
-from quiz_brain import quiz
-q_a_list=[]
+from quiz_brain import QuizBrain
+from ui import user_interface
 
-for q in question_data:
-  q_text=q['text']
-  a_text=q['answer']
-  new_question=question_ans(q_text,a_text)
-  q_a_list.append(new_question)
+question_bank = []
+for question in question_data:
+    question_text = question["question"]
+    question_answer = question["correct_answer"]
+    new_question = Question(question_text, question_answer)
+    question_bank.append(new_question)
 
-aliasgar=quiz(q_a_list,0)
 
-while aliasgar.still_has_questions():
-    aliasgar.next_question()
-    
+quiz = QuizBrain(question_bank)
+ui=user_interface(quiz)
 
+
+print("You've completed the quiz")
+print(f"Your final score was: {quiz.score}/{quiz.question_number}")
